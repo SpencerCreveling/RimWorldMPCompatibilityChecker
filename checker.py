@@ -19,16 +19,34 @@ def main():
     printOptions()
 
     while(True):
-        command = input("Enter Command: ")
-        match command:
+        command = input("Enter Command: ").strip().lower()
+        commandTokens = command.split(" ")
+        match commandTokens[0]:
             case "help":
                 printOptions()
-            case "check all":
-                compatibility = downloadedCompatibility(MHT, IHT, NHT)
-                printCompatibility(compatibility)
-            case "check active":
-                activeMods, root = indexModList(configURL)
-                compatibility = loadedCompatibility(activeMods, MHT, IHT, NHT)
+            case "check":
+                match commandTokens[1]:
+                    case "all":
+                        compatibility = downloadedCompatibility(MHT, IHT, NHT)
+                        printCompatibility(compatibility)
+                    case "active":
+                        activeMods, root = indexModList(configURL)
+                        compatibility = loadedCompatibility(activeMods, MHT, IHT, NHT)
+                        printCompatibility(compatibility)
+                    case "modList":
+                        path = commandTokens[2]
+                        activeMods, root = indexModList(path)
+                        compatibility = loadedCompatibility(activeMods, MHT, IHT, NHT)
+                        printCompatibility(compatibility)
+                    case "mod":
+                        modArg = ""
+                        for i in range(2, len(commandTokens)):
+                            modArg += " " + commandTokens[i]
+                        modCompatibility(modArg.strip(), IHT, NHT)
+                        
+
+
+
 
     
 
@@ -37,9 +55,9 @@ def printOptions():
     print("Commands:")
     print("check all - checks combatibility of all downloaded mods")
     print("check active - checks combatibility of all active mods")
-    print("check <Mod Name> - checks combatibility of a specific mod")
+    print("check modList <Mod list Path> - checks combatibility of a specific mod list from RimPy")
+    print("check mod <Mod Name> - checks combatibility of a specific mod")
     print("check <Steam ID> - checks combatibility of a specific mod")
-    print("check <Mod list Path> - checks combatibility of a specific mod list from RimPy")
     print("loaded list - lists all loaded mods")
     print("remove <Mod Name> - removes a mod from the loaded list")
     print("remove <status 0-4> - removes all mod from the loaded list of provided status")
@@ -76,6 +94,7 @@ def grabCompList():
 
 def indexModList(configURL):
     #fetch all mods in the config file
+    configURL = os.path.join(configURL, "ModsConfig.xml")
     tree = ET.parse(configURL)   
     root = tree.getroot()
     activeMods = root[1]
@@ -131,8 +150,20 @@ def downloadedCompatibility(MHT, IHT, NHT):
             compatibility[0].append(MHT[mod][0])
     return compatibility
 
+def modCompatibility(modArg, IHT, NHT):
+    if(modArg in IHT):
+        statuse = IHT[modArg]
+    elif(modArg in NHT):
+        statuse = NHT[modArg.lower()]
+    else:
+        statuse = 0
+
+    print("Status" + " | " + "Mod name")
+    print(str(statuse) + " | " + modArg)
+
 def printCompatibility(compatibility):
     #output results
+    print("Status" + " | " + "Mod name")
     for i in range(len(compatibility)):
         for mod in compatibility[i]:
             print(str(i) + " | " + mod)

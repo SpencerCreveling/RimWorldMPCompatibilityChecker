@@ -30,10 +30,11 @@ def main():
                         compatibility = downloadedCompatibility(MHT, IHT, NHT)
                         printCompatibility(compatibility)
                     case "active":
+                        configURL = os.path.join(configURL, "ModsConfig.xml")
                         activeMods, root = indexModList(configURL)
                         compatibility = loadedCompatibility(activeMods, MHT, IHT, NHT)
                         printCompatibility(compatibility)
-                    case "modList":
+                    case "modlist":
                         path = commandTokens[2]
                         activeMods, root = indexModList(path)
                         compatibility = loadedCompatibility(activeMods, MHT, IHT, NHT)
@@ -57,8 +58,11 @@ def printOptions():
     print("check active - checks combatibility of all active mods")
     print("check modList <Mod list Path> - checks combatibility of a specific mod list from RimPy")
     print("check mod <Mod Name> - checks combatibility of a specific mod")
-    print("check <Steam ID> - checks combatibility of a specific mod")
-    print("loaded list - lists all loaded mods")
+    print("check mod <Steam ID> - checks combatibility of a specific mod")
+    print("load sll - loads all sunscribed mods")
+    print("load active - loads all active mods")
+    print("load list <Mod list Path> - loads a specific mod list from RimPy")
+    print("list loaded - lists all loaded mods")
     print("remove <Mod Name> - removes a mod from the loaded list")
     print("remove <status 0-4> - removes all mod from the loaded list of provided status")
     print("save - saves the loaded list to Rimworld (Warning: this will overwrite your current loaded list and may not be a good load order)")
@@ -94,7 +98,6 @@ def grabCompList():
 
 def indexModList(configURL):
     #fetch all mods in the config file
-    configURL = os.path.join(configURL, "ModsConfig.xml")
     tree = ET.parse(configURL)   
     root = tree.getroot()
     activeMods = root[1]

@@ -3,7 +3,6 @@ import xml.etree.ElementTree as ET
 import os
 
 
-
 def main():
     #initial start up the get important paths
     if(not os.path.isfile("paths.config")):
@@ -17,7 +16,7 @@ def main():
     
     steamModsDir, configURL,  NHT, IHT, MHT = updateData()
     printOptions()
-
+    LoadedXML = None
     while(True):
         command = input("Enter Command: ").strip().lower()
         commandTokens = command.split(" ")
@@ -44,14 +43,14 @@ def main():
                         for i in range(2, len(commandTokens)):
                             modArg += " " + commandTokens[i]
                         modCompatibility(modArg.strip(), IHT, NHT)
+                    case "loaded":
+                        print("Not Implemented")
+            case "load":
+                match commandTokens[1]:
+                    case "all":
+                        LoadedXML = loadAllMods(MHT,os.path.join(configURL, "ModsConfig.xml"))
+
                         
-
-
-
-
-    
-
-
 def printOptions():
     print("Commands:")
     print("check all - checks combatibility of all downloaded mods")
@@ -59,14 +58,15 @@ def printOptions():
     print("check modList <Mod list Path> - checks combatibility of a specific mod list from RimPy")
     print("check mod <Mod Name> - checks combatibility of a specific mod")
     print("check mod <Steam ID> - checks combatibility of a specific mod")
-    print("load sll - loads all sunscribed mods")
+    print("check loaded - lists all loaded mods and their status")
+    print("load all - loads all subscibed mods from the workshop")
     print("load active - loads all active mods")
-    print("load list <Mod list Path> - loads a specific mod list from RimPy")
-    print("list loaded - lists all loaded mods")
+    print("load modlist <Mod list Path> - loads a specific mod list from RimPy")
     print("remove <Mod Name> - removes a mod from the loaded list")
     print("remove <status 0-4> - removes all mod from the loaded list of provided status")
     print("save - saves the loaded list to Rimworld (Warning: this will overwrite your current loaded list and may not be a good load order)")
-    print("save <Mod list Path> <fileName> - saves the loaded list to a specific path")
+    print("save <Mod list Path> <fileName> - saves the loaded list to a specific path (Note: can then be loaded into RimPy for sorting / editing)")
+    print("update - updates all data (Note: run this if you have added or removed mods from the workshop or activated / deactivated mods)")
     print("help - prints this menu")
     print("")
 
@@ -163,6 +163,20 @@ def modCompatibility(modArg, IHT, NHT):
 
     print("Status" + " | " + "Mod name")
     print(str(statuse) + " | " + modArg)
+
+def loadAllMods(MHT,configURL):
+    #load in sample xml
+    loadedXML = ET.parse(configURL)
+    loadedXML = loadedXML.getroot()
+    #removes exisitng mods
+    for mod in loadedXML[1].findall("li"):
+        loadedXML[1].remove(mod)
+    #add all worshop mods
+    for mod in MHT:
+        newMod = ET.fromstring("<li>" + mod + "</li>")
+        loadedXML[1].append(newMod)
+    return loadedXML
+
 
 def printCompatibility(compatibility):
     #output results

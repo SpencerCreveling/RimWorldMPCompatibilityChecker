@@ -26,6 +26,9 @@ def main():
             case "check all":
                 compatibility = downloadedCompatibility(MHT, IHT, NHT)
                 printCompatibility(compatibility)
+            case "check active":
+                activeMods, root = indexModList(configURL)
+                compatibility = loadedCompatibility(activeMods, MHT, IHT, NHT)
 
     
 

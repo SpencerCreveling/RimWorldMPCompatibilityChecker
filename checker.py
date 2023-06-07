@@ -10,11 +10,13 @@ def main():
         dir1 = input("for WINDOWS the default diretory is (SteamLibrary\\steamapps\\workshop\\content\\294100)")
         print("Please enter the path for your Rimworld config folder")
         dir2 = input("for WINDOWS the default diretory is (Users\\\{USER\}\\AppData\\LocalLow\\Ludeon Studios\\RimWorld by Ludeon Studios\\Config)")
+        print("Please enter the path for your Rimworld install location")
+        dir3 = input("for WINDOWS the default diretory is (SteamLibrary\\steamapps\\common\\RimWorld)")
         f = open("paths.config", "x")
-        f.write(dir1 + "\n" + dir2)
+        f.write(dir1 + "\n" + dir2 + "\n" + dir3)
         f.close()
     
-    steamModsDir, configURL,  NHT, IHT, MHT = updateData()
+    rimworldDir, steamModsDir, configURL,  NHT, IHT, MHT = updateData()
     printOptions()
     LoadedXML = None
     while(True):
@@ -48,7 +50,12 @@ def main():
             case "load":
                 match commandTokens[1]:
                     case "all":
-                        LoadedXML = loadAllMods(MHT,os.path.join(configURL, "ModsConfig.xml"))
+                        LoadedXML = loadAllMods(MHT,os.path.join(configURL, "ModsConfig.xml"),rimworldDir)
+                    case "active":
+                        LoadedXML = ET.parse(os.path.join(configURL, "ModsConfig.xml"))
+                    case "modlist":
+                        path = commandTokens[2]
+                        LoadedXML = ET.parse(path)
 
                         
 def printOptions():
@@ -76,10 +83,11 @@ def updateData():
     #data that will always be used
     steamModsDir = f.readline().strip()
     configURL = f.readline().strip()
+    rimworldDir = f.readline().strip()
     NHT, IHT = grabCompList()
     MHT =IndexSteamMods(steamModsDir)
     f.close()
-    return steamModsDir, configURL,  NHT, IHT, MHT
+    return rimworldDir,steamModsDir, configURL,  NHT, IHT, MHT
 
 def grabCompList():
     #grab compatibility data from master coompatibility list
@@ -164,17 +172,34 @@ def modCompatibility(modArg, IHT, NHT):
     print("Status" + " | " + "Mod name")
     print(str(statuse) + " | " + modArg)
 
-def loadAllMods(MHT,configURL):
+def loadAllMods(MHT,configURL,rimworldDir):
+    rimworldDir = os.path.join(rimworldDir, "Data")
     #load in sample xml
     loadedXML = ET.parse(configURL)
     loadedXML = loadedXML.getroot()
     #removes exisitng mods
     for mod in loadedXML[1].findall("li"):
         loadedXML[1].remove(mod)
+    for mod in loadedXML[2].findall("li"):
+        loadedXML[2].remove(mod)
     #add all worshop mods
     for mod in MHT:
         newMod = ET.fromstring("<li>" + mod + "</li>")
         loadedXML[1].append(newMod)
+    #add all relevent DLC
+    if(os.path.exists(os.path.join(rimworldDir, "Core"))):
+        newMod = ET.fromstring("<li>" + "ludeon.rimworld" + "</li>")
+        loadedXML[2].append(newMod)
+    if(os.path.exists(os.path.join(rimworldDir, "Royalty"))):
+        newMod = ET.fromstring("<li>" + "ludeon.rimworld.royalty" + "</li>")
+        loadedXML[2].append(newMod)
+    if(os.path.exists(os.path.join(rimworldDir, "Ideology"))):
+        newMod = ET.fromstring("<li>" + "ludeon.rimworld.ideology" + "</li>")
+        loadedXML[2].append(newMod)
+    if(os.path.exists(os.path.join(rimworldDir, "Biotech"))):
+        newMod = ET.fromstring("<li>" + "ludeon.rimworld.biotech" + "</li>")
+        loadedXML[2].append(newMod)
+
     return loadedXML
 
 

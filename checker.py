@@ -15,12 +15,35 @@ def main():
         f.write(dir1 + "\n" + dir2)
         f.close()
     
-        steamModsDir, configURL,  NHT, IHT, MHT = updateData()
+    steamModsDir, configURL,  NHT, IHT, MHT = updateData()
+    printOptions()
 
+    while(True):
+        command = input("Enter Command: ")
+        match command:
+            case "help":
+                printOptions()
+            case "check all":
+                compatibility = downloadedCompatibility(MHT, IHT, NHT)
+                printCompatibility(compatibility)
 
     
 
 
+def printOptions():
+    print("Commands:")
+    print("check all - checks combatibility of all downloaded mods")
+    print("check active - checks combatibility of all active mods")
+    print("check <Mod Name> - checks combatibility of a specific mod")
+    print("check <Steam ID> - checks combatibility of a specific mod")
+    print("check <Mod list Path> - checks combatibility of a specific mod list from RimPy")
+    print("loaded list - lists all loaded mods")
+    print("remove <Mod Name> - removes a mod from the loaded list")
+    print("remove <status 0-4> - removes all mod from the loaded list of provided status")
+    print("save - saves the loaded list to Rimworld (Warning: this will overwrite your current loaded list and may not be a good load order)")
+    print("save <Mod list Path> <fileName> - saves the loaded list to a specific path")
+    print("help - prints this menu")
+    print("")
 
 
 def updateData():
@@ -53,7 +76,7 @@ def indexModList(configURL):
     tree = ET.parse(configURL)   
     root = tree.getroot()
     activeMods = root[1]
-    return activeMods
+    return activeMods, root
 
 def IndexSteamMods(steamModsDir):
     #index all installed mods
@@ -80,7 +103,7 @@ def IndexSteamMods(steamModsDir):
         MHT[packageID.lower()] = [name, id]
     return MHT
 
-def compatibility(activeMods, MHT, IHT, NHT):
+def loadedCompatibility(activeMods, MHT, IHT, NHT):
     compatibility = [[],[],[],[],[]]
     #compare modsconfig.xml to master list using HMT as a middleman
     for mod in activeMods:
@@ -91,6 +114,18 @@ def compatibility(activeMods, MHT, IHT, NHT):
                 compatibility[NHT[MHT[mod.text][0].lower()]].append(MHT[mod.text][0])
             else:
                 compatibility[0].append(MHT[mod.text][0])
+    return compatibility
+
+def downloadedCompatibility(MHT, IHT, NHT):
+    compatibility = [[],[],[],[],[]]
+    #compare MHT to master list
+    for mod in MHT:
+        if(MHT[mod][1] in IHT):
+            compatibility[IHT[MHT[mod][1]]].append(MHT[mod][0])
+        elif(MHT[mod][0].lower() in NHT):
+            compatibility[NHT[MHT[mod][0].lower()]].append(MHT[mod][0])
+        else:
+            compatibility[0].append(MHT[mod][0])
     return compatibility
 
 def printCompatibility(compatibility):

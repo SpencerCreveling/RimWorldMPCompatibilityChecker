@@ -2,65 +2,105 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 import os
 
-#grab compatibility data from master coompatibility list
-SHEET_ID = "1jaDxV8F7bcz4E9zeIRmZGKuaX7d0kvWWq28aKckISaY"
-SHEET_NAME = 'MasterCompatibilityList'
-url = f'https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME}'
-df = pd.read_csv(url)
 
-NHT = {}
-IHT = {}
-for i in range(len(df)):
-    grabber = df.iloc[i,0]
-    NHT[str(df.loc[i,"Mod name"]).lower()] = grabber #NAME HASH TABLE
-    IHT[str(df.loc[i,"Steam ID"])] = grabber  #ID HASH TABLE
 
-#fetch all mods in the config file
-configURL = "C:\\Users\\Spencer\\AppData\\LocalLow\\Ludeon Studios\\RimWorld by Ludeon Studios\\Config\\ModsConfig.xml"
-tree = ET.parse(configURL)   
-root = tree.getroot()
-activeMods = root[1]
+def main():
+    #initial start up the get important paths
+    if(not os.path.isfile("paths.config")):
+        print("Running First time setup... Please enter the path for you Rimworld workshop folder")
+        dir1 = input("for WINDOWS the default diretory is (SteamLibrary\\steamapps\\workshop\\content\\294100)")
+        print("Please enter the path for your Rimworld config folder")
+        dir2 = input("for WINDOWS the default diretory is (Users\\\{USER\}\\AppData\\LocalLow\\Ludeon Studios\\RimWorld by Ludeon Studios\\Config)")
+        f = open("paths.config", "x")
+        f.write(dir1 + "\n" + dir2)
+        f.close()
+    
+        steamModsDir, configURL,  NHT, IHT, MHT = updateData()
 
-#index all installed mods
-MHT = {}
-steamModsDir = "E:\\SteamLibrary\\steamapps\\workshop\\content\\294100"
-content = os.listdir(steamModsDir)
-#for mod in content:
-for mod in content:
-    #steam workshop id
-    id = mod
-    #data path for about..xml
-    modDataPath = os.path.join(steamModsDir, mod)
-    modDataPath = os.path.join(modDataPath, "About")
-    modDataPath = os.path.join(modDataPath, "About.xml")
-    tree = ET.parse(modDataPath)
+
+    
+
+
+
+
+def updateData():
+    f = open("paths.config", "r")
+    #data that will always be used
+    steamModsDir = f.readline().strip()
+    configURL = f.readline().strip()
+    NHT, IHT = grabCompList()
+    MHT =IndexSteamMods(steamModsDir)
+    f.close()
+    return steamModsDir, configURL,  NHT, IHT, MHT
+
+def grabCompList():
+    #grab compatibility data from master coompatibility list
+    SHEET_ID = "1jaDxV8F7bcz4E9zeIRmZGKuaX7d0kvWWq28aKckISaY"
+    SHEET_NAME = 'MasterCompatibilityList'
+    url = f'https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME}'
+    df = pd.read_csv(url)
+
+    NHT = {}
+    IHT = {}
+    for i in range(len(df)):
+        grabber = df.iloc[i,0]
+        NHT[str(df.loc[i,"Mod name"]).lower()] = grabber #NAME HASH TABLE
+        IHT[str(df.loc[i,"Steam ID"])] = grabber  #ID HASH TABLE
+    return NHT, IHT
+
+def indexModList(configURL):
+    #fetch all mods in the config file
+    tree = ET.parse(configURL)   
     root = tree.getroot()
-    name = ""
-    packageID = ""
-    #extracting name / packageID to compare to master list and modsconfig.xml
-    for child in root:
-        if(child.tag == "name"):
-            name = child.text
-        if(child.tag == "packageId"):
-            packageID = child.text
-    MHT[packageID.lower()] = [name, id]
+    activeMods = root[1]
+    return activeMods
 
-compatibility = [[],[],[],[],[]]
-#compare modsconfig.xml to master list using HMT as a middleman
-for mod in activeMods:
-    if(mod.text in MHT):
-        if(MHT[mod.text][1] in IHT):
-            compatibility[IHT[MHT[mod.text][1]]].append(MHT[mod.text][0])
-        elif(MHT[mod.text][0].lower() in NHT):
-            compatibility[NHT[MHT[mod.text][0].lower()]].append(MHT[mod.text][0])
-        else:
-            compatibility[0].append(MHT[mod.text][0])
+def IndexSteamMods(steamModsDir):
+    #index all installed mods
+    MHT = {}
+    content = os.listdir(steamModsDir)
+    #for mod in content:
+    for mod in content:
+        #steam workshop id
+        id = mod
+        #data path for about..xml
+        modDataPath = os.path.join(steamModsDir, mod)
+        modDataPath = os.path.join(modDataPath, "About")
+        modDataPath = os.path.join(modDataPath, "About.xml")
+        tree = ET.parse(modDataPath)
+        root = tree.getroot()
+        name = ""
+        packageID = ""
+        #extracting name / packageID to compare to master list and modsconfig.xml
+        for child in root:
+            if(child.tag == "name"):
+                name = child.text
+            if(child.tag == "packageId"):
+                packageID = child.text
+        MHT[packageID.lower()] = [name, id]
+    return MHT
 
-#output results
-for i in range(len(compatibility)):
-    for mod in compatibility[i]:
-        print(str(i) + " | " + mod)
-    print("--------------------")
+def compatibility(activeMods, MHT, IHT, NHT):
+    compatibility = [[],[],[],[],[]]
+    #compare modsconfig.xml to master list using HMT as a middleman
+    for mod in activeMods:
+        if(mod.text in MHT):
+            if(MHT[mod.text][1] in IHT):
+                compatibility[IHT[MHT[mod.text][1]]].append(MHT[mod.text][0])
+            elif(MHT[mod.text][0].lower() in NHT):
+                compatibility[NHT[MHT[mod.text][0].lower()]].append(MHT[mod.text][0])
+            else:
+                compatibility[0].append(MHT[mod.text][0])
+    return compatibility
+
+def printCompatibility(compatibility):
+    #output results
+    for i in range(len(compatibility)):
+        for mod in compatibility[i]:
+            print(str(i) + " | " + mod)
+        print("--------------------")
+
+main()
 
 
 

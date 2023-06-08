@@ -48,8 +48,11 @@ def main():
                             modArg += " " + commandTokens[i]
                         modCompatibility(modArg.strip(), IHT, NHT)
                     case "loaded":
-                        compatibility = loadedCompatibility(LoadedXML, MHT, IHT, NHT)
-                        printCompatibility(compatibility)
+                        if(LoadedXML != None):
+                            compatibility = loadedCompatibility(LoadedXML, MHT, IHT, NHT)
+                            printCompatibility(compatibility)
+                        else:
+                            print("no list loaded to check")
                     case _:
                         print("Invalid Command")
             case "load":
@@ -66,24 +69,33 @@ def main():
                     case _:
                         print("Invalid Command")
             case "add":
-                modArg = ""
-                for i in range(1, len(commandTokens)):
-                    modArg += " " + commandTokens[i]
-                LoadedXML = addMod(modArg.strip(), LoadedXML, MHT)
-            case "remove":
-                if(commandTokens[1].isdigit() and int(commandTokens[1]) < 4):
-                    LoadedXML = removeModRange(int(commandTokens[1]), LoadedXML,MHT,NHT,IHT)
-                else:   
+                if(LoadedXML != None):
                     modArg = ""
                     for i in range(1, len(commandTokens)):
                         modArg += " " + commandTokens[i]
-                    LoadedXML = removeMod(modArg.strip(), LoadedXML, MHT)
+                    LoadedXML = addMod(modArg.strip(), LoadedXML, MHT)
+                else:
+                    print("no list loaded to modify")
+            case "remove":
+                if(LoadedXML != None):
+                    if(commandTokens[1].isdigit() and int(commandTokens[1]) < 4):
+                        LoadedXML = removeModRange(int(commandTokens[1]), LoadedXML,MHT,NHT,IHT)
+                    else:   
+                        modArg = ""
+                        for i in range(1, len(commandTokens)):
+                            modArg += " " + commandTokens[i]
+                        LoadedXML = removeMod(modArg.strip(), LoadedXML, MHT)
+                else:
+                    print("no list loaded to modify")
             case "save":
-                if(len(commandTokens) == 1):
-                    saveDir = os.path.join(configURL, "ModsConfig.xml")
-                else: 
-                    saveDir = commandTokens[1]
-                ET.ElementTree(LoadedXML).write(saveDir)
+                if(LoadedXML == None):
+                    if(len(commandTokens) == 1):
+                        saveDir = os.path.join(configURL, "ModsConfig.xml")
+                    else: 
+                        saveDir = commandTokens[1]
+                    ET.ElementTree(LoadedXML).write(saveDir)
+                else:
+                    print("no list loaded to save")
             case _:
                 print("Invalid Command")
 

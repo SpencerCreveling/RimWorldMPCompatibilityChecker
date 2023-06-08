@@ -46,7 +46,8 @@ def main():
                             modArg += " " + commandTokens[i]
                         modCompatibility(modArg.strip(), IHT, NHT)
                     case "loaded":
-                        print("Not Implemented")
+                        compatibility = loadedCompatibility(LoadedXML, MHT, IHT, NHT)
+                        printCompatibility(compatibility)
             case "load":
                 match commandTokens[1]:
                     case "all":
@@ -179,6 +180,22 @@ def modCompatibility(modArg, IHT, NHT):
     print("Status" + " | " + "Mod name")
     print(str(statuse) + " | " + modArg)
 
+def loadedCompatibility(loadedXML,MHT,IHT,NHT):
+    compatibility = [[],[],[],[],[]]
+    #compare loaded xml with the compatability list
+    for mod in loadedXML[1]:
+        if("ludeon" not in mod.text):
+            name = MHT[mod.text][0]
+            id = MHT[mod.text][1]
+
+            if(id in IHT):
+                compatibility[IHT[id]].append(name)
+            elif(name.lower() in NHT):
+                compatibility[NHT[name.lower()]].append(name)
+            else:
+                compatibility[0].append(name)
+    return compatibility
+
 def loadAllMods(MHT,configURL,rimworldDir):
     rimworldDir = os.path.join(rimworldDir, "Data")
     #load in sample xml
@@ -197,15 +214,19 @@ def loadAllMods(MHT,configURL,rimworldDir):
     if(os.path.exists(os.path.join(rimworldDir, "Core"))):
         newMod = ET.fromstring("<li>" + "ludeon.rimworld" + "</li>")
         loadedXML[2].append(newMod)
+        loadedXML[1].append(newMod)
     if(os.path.exists(os.path.join(rimworldDir, "Royalty"))):
         newMod = ET.fromstring("<li>" + "ludeon.rimworld.royalty" + "</li>")
         loadedXML[2].append(newMod)
+        loadedXML[1].append(newMod)
     if(os.path.exists(os.path.join(rimworldDir, "Ideology"))):
         newMod = ET.fromstring("<li>" + "ludeon.rimworld.ideology" + "</li>")
         loadedXML[2].append(newMod)
+        loadedXML[1].append(newMod)
     if(os.path.exists(os.path.join(rimworldDir, "Biotech"))):
         newMod = ET.fromstring("<li>" + "ludeon.rimworld.biotech" + "</li>")
         loadedXML[2].append(newMod)
+        loadedXML[1].append(newMod)
 
     return loadedXML
 

@@ -50,6 +50,8 @@ def main():
                     case "loaded":
                         compatibility = loadedCompatibility(LoadedXML, MHT, IHT, NHT)
                         printCompatibility(compatibility)
+                    case _:
+                        print("Invalid Command")
             case "load":
                 match commandTokens[1]:
                     case "all":
@@ -61,6 +63,8 @@ def main():
                         path = commandTokens[2]
                         LoadedXML = ET.parse(path)
                         LoadedXML = LoadedXML.getroot()
+                    case _:
+                        print("Invalid Command")
             case "add":
                 modArg = ""
                 for i in range(1, len(commandTokens)):
@@ -77,6 +81,8 @@ def main():
                 else: 
                     saveDir = commandTokens[1]
                 ET.ElementTree(LoadedXML).write(saveDir)
+            case _:
+                print("Invalid Command")
 
                         
 def printOptions():
@@ -111,6 +117,7 @@ def updateData():
     NHT, IHT = grabCompList()
     MHT =IndexSteamMods(steamModsDir)
     f.close()
+    print("data updated successfully")
     return rimworldDir,steamModsDir, configURL,  NHT, IHT, MHT
 
 def grabCompList():
@@ -129,6 +136,9 @@ def grabCompList():
     return NHT, IHT
 
 def indexModList(configURL):
+    if(not os.path.exists(configURL)):
+        print("Config file not found make sure you enterd the right path in paths.config")
+        return
     #fetch all mods in the config file
     tree = ET.parse(configURL)   
     root = tree.getroot()
@@ -138,6 +148,9 @@ def indexModList(configURL):
 def IndexSteamMods(steamModsDir):
     #index all installed mods
     MHT = {}
+    if(not os.path.exists(steamModsDir)):
+        print("Steam Mods Directory not found make sure you enterd the right path in paths.config")
+        return
     content = os.listdir(steamModsDir)
     #for mod in content:
     for mod in content:
@@ -243,7 +256,7 @@ def loadAllMods(MHT,configURL,rimworldDir):
         newMod = ET.fromstring("<li>" + "ludeon.rimworld.biotech" + "</li>")
         loadedXML[2].append(newMod)
         loadedXML[1].append(newMod)
-
+    print("All mods loaded successfully")
     return loadedXML
 
 def addMod(modArg, LoadedXML, MHT):
@@ -251,7 +264,10 @@ def addMod(modArg, LoadedXML, MHT):
         if(MHT[keys][0].lower() == modArg.lower()):
             newMod = ET.fromstring("<li>" + keys + "</li>")
             LoadedXML[1].append(newMod)
+            print("Mod loaded successfully")
             return LoadedXML
+    print("Mod not found")
+    return LoadedXML
         
 def removeMod(modArg, LoadedXML, MHT):
     for keys in MHT:
@@ -259,7 +275,10 @@ def removeMod(modArg, LoadedXML, MHT):
             for mod in LoadedXML[1].findall("li"):
                 if(mod.text == keys):
                     LoadedXML[1].remove(mod)
+                    print("Mod removed successfully")
                     return LoadedXML
+    print("Mod not found")
+    return LoadedXML
 
 def printCompatibility(compatibility):
     #output results

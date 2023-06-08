@@ -71,6 +71,12 @@ def main():
                 for i in range(1, len(commandTokens)):
                     modArg += " " + commandTokens[i]
                 LoadedXML = removeMod(modArg.strip(), LoadedXML, MHT)
+            case "save":
+                if(len(commandTokens) == 1):
+                    saveDir = os.path.join(configURL, "ModsConfig.xml")
+                else: 
+                    saveDir = commandTokens[1]
+                ET.ElementTree(LoadedXML).write(saveDir)
 
                         
 def printOptions():

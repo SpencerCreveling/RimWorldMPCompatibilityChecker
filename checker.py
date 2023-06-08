@@ -25,6 +25,8 @@ def main():
         match commandTokens[0]:
             case "help":
                 printOptions()
+            case "update":
+                rimworldDir, steamModsDir, configURL,  NHT, IHT, MHT = updateData()
             case "check":
                 match commandTokens[1]:
                     case "all":
@@ -60,8 +62,15 @@ def main():
                         LoadedXML = ET.parse(path)
                         LoadedXML = LoadedXML.getroot()
             case "add":
-                modArg = commandTokens[1]
-                LoadedXML = addMod(modArg, LoadedXML, MHT)
+                modArg = ""
+                for i in range(1, len(commandTokens)):
+                    modArg += " " + commandTokens[i]
+                LoadedXML = addMod(modArg.strip(), LoadedXML, MHT)
+            case "remove":
+                modArg = ""
+                for i in range(1, len(commandTokens)):
+                    modArg += " " + commandTokens[i]
+                LoadedXML = removeMod(modArg.strip(), LoadedXML, MHT)
 
                         
 def printOptions():
@@ -78,6 +87,7 @@ def printOptions():
     print("add <Mod Name> - adds a mod to the loaded list")
     print("add <Steam ID> - adds a mod to the loaded list")
     print("remove <Mod Name> - removes a mod from the loaded list")
+    print("remove <Steam ID> - removes a mod from the loaded list")
     print("remove <status 0-4> - removes all mod from the loaded list of provided status")
     print("save - saves the loaded list to Rimworld (Warning: this will overwrite your current loaded list and may not be a good load order)")
     print("save <Mod list Path> <fileName> - saves the loaded list to a specific path (Note: can then be loaded into RimPy for sorting / editing)")
@@ -236,6 +246,14 @@ def addMod(modArg, LoadedXML, MHT):
             newMod = ET.fromstring("<li>" + keys + "</li>")
             LoadedXML[1].append(newMod)
             return LoadedXML
+        
+def removeMod(modArg, LoadedXML, MHT):
+    for keys in MHT:
+        if(MHT[keys][0].lower() == modArg.lower()):
+            for mod in LoadedXML[1].findall("li"):
+                if(mod.text == keys):
+                    LoadedXML[1].remove(mod)
+                    return LoadedXML
 
 def printCompatibility(compatibility):
     #output results

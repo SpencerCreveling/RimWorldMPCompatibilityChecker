@@ -53,9 +53,14 @@ def main():
                         LoadedXML = loadAllMods(MHT,os.path.join(configURL, "ModsConfig.xml"),rimworldDir)
                     case "active":
                         LoadedXML = ET.parse(os.path.join(configURL, "ModsConfig.xml"))
+                        LoadedXML = LoadedXML.getroot()
                     case "modlist":
                         path = commandTokens[2]
                         LoadedXML = ET.parse(path)
+                        LoadedXML = LoadedXML.getroot()
+            case "add":
+                modArg = commandTokens[1]
+                LoadedXML = addMod(modArg, LoadedXML, MHT)
 
                         
 def printOptions():
@@ -69,6 +74,8 @@ def printOptions():
     print("load all - loads all subscibed mods from the workshop")
     print("load active - loads all active mods")
     print("load modlist <Mod list Path> - loads a specific mod list from RimPy")
+    print("add <Mod Name> - adds a mod to the loaded list")
+    print("add <Steam ID> - adds a mod to the loaded list")
     print("remove <Mod Name> - removes a mod from the loaded list")
     print("remove <status 0-4> - removes all mod from the loaded list of provided status")
     print("save - saves the loaded list to Rimworld (Warning: this will overwrite your current loaded list and may not be a good load order)")
@@ -202,6 +209,12 @@ def loadAllMods(MHT,configURL,rimworldDir):
 
     return loadedXML
 
+def addMod(modArg, LoadedXML, MHT):
+    for keys in MHT:
+        if(MHT[keys][0].lower() == modArg.lower()):
+            newMod = ET.fromstring("<li>" + keys + "</li>")
+            LoadedXML[1].append(newMod)
+            return LoadedXML
 
 def printCompatibility(compatibility):
     #output results

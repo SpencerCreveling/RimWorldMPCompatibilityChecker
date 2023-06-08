@@ -71,10 +71,13 @@ def main():
                     modArg += " " + commandTokens[i]
                 LoadedXML = addMod(modArg.strip(), LoadedXML, MHT)
             case "remove":
-                modArg = ""
-                for i in range(1, len(commandTokens)):
-                    modArg += " " + commandTokens[i]
-                LoadedXML = removeMod(modArg.strip(), LoadedXML, MHT)
+                if(commandTokens[1].isdigit() and int(commandTokens[1]) < 4):
+                    LoadedXML = removeModRange(int(commandTokens[1]), LoadedXML,MHT,NHT,IHT)
+                else:   
+                    modArg = ""
+                    for i in range(1, len(commandTokens)):
+                        modArg += " " + commandTokens[i]
+                    LoadedXML = removeMod(modArg.strip(), LoadedXML, MHT)
             case "save":
                 if(len(commandTokens) == 1):
                     saveDir = os.path.join(configURL, "ModsConfig.xml")
@@ -278,6 +281,22 @@ def removeMod(modArg, LoadedXML, MHT):
                     print("Mod removed successfully")
                     return LoadedXML
     print("Mod not found")
+    return LoadedXML
+
+def removeModRange(range, LoadedXML,MHT,NHT,IHT):
+    for mod in LoadedXML[1]:
+        if("ludeon" not in mod.text):
+            name = MHT[mod.text][0]
+            id = MHT[mod.text][1]
+            if(id in IHT):
+                if(IHT[id] == range):
+                    LoadedXML[1].remove(mod)
+            elif(name.lower() in NHT):
+                if(NHT[name.lower()] == range):
+                    LoadedXML[1].remove(mod)
+            else:
+                if(0 == range):
+                    LoadedXML[1].remove(mod)
     return LoadedXML
 
 def printCompatibility(compatibility):

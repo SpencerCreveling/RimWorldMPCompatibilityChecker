@@ -119,6 +119,7 @@ def printOptions():
     print("save - saves the loaded list to Rimworld (Warning: this will overwrite your current loaded list and may not be a good load order)")
     print("save <Mod list Path> <fileName> - saves the loaded list to a specific path (Note: can then be loaded into RimPy for sorting / editing)")
     print("update - updates all data (Note: run this if you have added or removed mods from the workshop or activated / deactivated mods)")
+    print("change path - changes the paths for Rimworld install, Steam Mods, and Rimworld config")
     print("help - prints this menu")
     print("")
 
@@ -175,17 +176,18 @@ def IndexSteamMods(steamModsDir):
         modDataPath = os.path.join(steamModsDir, mod)
         modDataPath = os.path.join(modDataPath, "About")
         modDataPath = os.path.join(modDataPath, "About.xml")
-        tree = ET.parse(modDataPath)
-        root = tree.getroot()
-        name = ""
-        packageID = ""
-        #extracting name / packageID to compare to master list and modsconfig.xml
-        for child in root:
-            if(child.tag == "name"):
-                name = child.text
-            if(child.tag == "packageId"):
-                packageID = child.text
-        MHT[packageID.lower()] = [name, id]
+        if(os.path.exists(modDataPath)):
+            tree = ET.parse(modDataPath)
+            root = tree.getroot()
+            name = ""
+            packageID = ""
+            #extracting name / packageID to compare to master list and modsconfig.xml
+            for child in root:
+                if(child.tag == "name"):
+                    name = child.text
+                if(child.tag == "packageId"):
+                    packageID = child.text
+            MHT[packageID.lower()] = [name, id]
     return MHT
 
 def loadedCompatibility(activeMods, MHT, IHT, NHT):

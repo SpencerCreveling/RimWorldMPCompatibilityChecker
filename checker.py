@@ -321,7 +321,6 @@ def printCompatibility(compatibility):
             print(str(i) + " | " + mod)
         print("--------------------")
 
-main()
 
 
 

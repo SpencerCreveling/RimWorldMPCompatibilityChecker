@@ -9,8 +9,25 @@ class modGUI:
         self.root.title("RimWorld MP compatibility manager")
         self.root.geometry("600x800")
 
+        self.root.rowconfigure(0, weight=0)
+        self.root.rowconfigure(1, weight=1)
+
+        self.root.columnconfigure(0, weight=1)
+        self.root.columnconfigure(1, weight=0)
+
         self.Paths = tk.Button(self.root, text="Paths", height=1,command=self.displayPaths)
         self.Paths.grid(row=0, column=0,sticky="nw")
+
+        MHT = indexSteamMods(getPaths()[0])
+        modnames = []
+        for mod in list(MHT.values()):
+            modnames.append(mod[0])
+
+        self.Modlist = tk.Listbox(self.root)
+        self.Modlist.insert(0, *modnames)
+        self.Modlist.grid(row=1, column=0,sticky="nsew")
+        
+
 
         self.root.mainloop()
 

@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import filedialog
-from checker import *
 from library import *
 
 class modGUI:
@@ -19,12 +18,16 @@ class modGUI:
         self.Paths.grid(row=0, column=0,sticky="nw")
 
         MHT = indexSteamMods(getPaths()[0])
-        modnames = []
-        for mod in list(MHT.values()):
-            modnames.append(mod[0])
+        NHT, IHT = grabCompList()
+        compatability = downloadedCompatibility(MHT, IHT, NHT)
 
         self.Modlist = tk.Listbox(self.root)
-        self.Modlist.insert(0, *modnames)
+        
+        for x in range(0, 5):
+            for mod in compatability[x]:
+                self.Modlist.insert(0, str(x) + " | " + mod)
+                self.Modlist.itemconfig(0, bg = "red" if x == 1 else "orange" if x == 2 else "yellow" if x == 3 else "green" if x == 4 else "grey")
+
         self.Modlist.grid(row=1, column=0,sticky="nsew")
         
 

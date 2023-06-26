@@ -2,6 +2,7 @@ import os
 import pickle
 import xml.etree.ElementTree as ET
 import pandas as pd
+from mod import *
 
 def getPaths():
     if(os.path.isfile("paths.config")):
@@ -16,7 +17,7 @@ def savePaths(paths):
 
 def indexSteamMods(steamModsDir):
     #index all installed mods
-    MHT = {}
+    mods = []
     if(not os.path.exists(steamModsDir)):
         print("Steam Mods Directory not found make sure you enterd the right path in paths.config")
         return
@@ -40,8 +41,9 @@ def indexSteamMods(steamModsDir):
                     name = child.text
                 if(child.tag == "packageId"):
                     packageID = child.text
-            MHT[packageID.lower()] = [name, id]
-    return MHT
+            mods.append(Mod(name, packageID, id))
+    mods = downloadedCompatibility(mods)
+    return mods
 
 def grabCompList():
     #grab compatibility data from master coompatibility list
@@ -58,14 +60,12 @@ def grabCompList():
         IHT[str(df.loc[i,"Steam ID"])] = grabber  #ID HASH TABLE
     return NHT, IHT
 
-def downloadedCompatibility(MHT, IHT, NHT):
-    compatibility = [[],[],[],[],[]]
-    #compare MHT to master list
-    for mod in MHT:
-        if(MHT[mod][1] in IHT):
-            compatibility[IHT[MHT[mod][1]]].append(MHT[mod][0])
-        elif(MHT[mod][0].lower() in NHT):
-            compatibility[NHT[MHT[mod][0].lower()]].append(MHT[mod][0])
-        else:
-            compatibility[0].append(MHT[mod][0])
-    return compatibility
+def downloadedCompatibility(mods):
+    NHT, IHT = grabCompList()
+    for mod in mods:
+        if(mod.id in IHT):
+           mod.compatibility = IHT[mod.id]
+        elif(mod.name.lower() in NHT):
+            mod.compatibility = NHT[mod.name.lower()]
+        print(mod.compatibility)
+    return mods

@@ -17,17 +17,14 @@ class modGUI:
         self.Paths = tk.Button(self.root, text="Paths", height=1,command=self.displayPaths)
         self.Paths.grid(row=0, column=0,sticky="nw")
 
-        MHT = indexSteamMods(getPaths()[0])
-        NHT, IHT = grabCompList()
-        compatability = downloadedCompatibility(MHT, IHT, NHT)
+        self.SortButton = tk.Button(self.root, text="Sort Numericaly", height=1,command=self.updateAllModList)
+        self.SortButton.grid(row=0, column=1,sticky="ne")
+
+        self.alphabeticSort = True
 
         self.Modlist = tk.Listbox(self.root)
-        
-        for x in range(0, 5):
-            for mod in compatability[x]:
-                self.Modlist.insert(0, str(x) + " | " + mod)
-                self.Modlist.itemconfig(0, bg = "red" if x == 1 else "orange" if x == 2 else "yellow" if x == 3 else "green" if x == 4 else "grey")
-
+        self.mods = indexSteamMods(getPaths()[0])
+        self.updateAllModList()
         self.Modlist.grid(row=1, column=0,sticky="nsew")
         
 
@@ -96,8 +93,22 @@ class modGUI:
         self.rimworldDir.set(filename)
         self.paths[2] = filename
         savePaths(self.paths)
-        
-        
+
+    def updateAllModList(self):
+        self.Modlist.delete(0, tk.END)
+        if(self.alphabeticSort):
+            self.SortButton.config(text="Sort Numericaly")
+            self.mods.sort(key=lambda x: x.name)
+            for mod in self.mods:
+                self.Modlist.insert(tk.END, mod)
+                self.Modlist.itemconfig(tk.END, bg="red" if mod.compatibility == 1 else "orange" if mod.compatibility == 2 else "yellow" if mod.compatibility == 3 else "green" if mod.compatibility == 4 else "gray")
+        else:
+            self.SortButton.config(text="Sort Alphabeticaly")
+            self.mods.sort(key=lambda x: x.compatibility)
+            for mod in self.mods:
+                self.Modlist.insert(0, mod)
+                self.Modlist.itemconfig(0, bg="red" if mod.compatibility == 1 else "orange" if mod.compatibility == 2 else "yellow" if mod.compatibility == 3 else "green" if mod.compatibility == 4 else "gray")
+        self.alphabeticSort = not self.alphabeticSort
 
 
 

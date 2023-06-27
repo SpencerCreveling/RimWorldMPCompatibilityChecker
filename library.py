@@ -67,5 +67,18 @@ def downloadedCompatibility(mods):
            mod.compatibility = IHT[mod.id]
         elif(mod.name.lower() in NHT):
             mod.compatibility = NHT[mod.name.lower()]
-        print(mod.compatibility)
+    return mods
+
+def updateLoadedMods(mods):
+    #update loaded mods from modsconfig.xml
+    modsConfigPath = os.path.join(getPaths()[1], "ModsConfig.xml")
+    if(not os.path.exists(modsConfigPath)):
+        print("ModsConfig.xml not found make sure you enterd the right path in paths.config")
+        return
+    tree = ET.parse(modsConfigPath)
+    root = tree.getroot()
+    for mod in mods:
+        for child in root[1]:
+            if(mod.packageId.lower() == child.text.lower()):
+                mod.loaded = True
     return mods

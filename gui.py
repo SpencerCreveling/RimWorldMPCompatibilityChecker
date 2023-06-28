@@ -25,14 +25,21 @@ class modGUI:
         self.listFrame.columnconfigure(1, weight=1)
         self.listFrame.grid(row=1, column=0,sticky="nsew")
 
-        unloadedModlist = modList.ModList(False,self.listFrame)
-        unloadedModlist.grid(row=0, column=0,sticky="nsew")
+        self.mods = indexSteamMods(getPaths()[0])
+        self.mods = updateLoadedMods(self.mods)
 
-        loadedModlist = modList.ModList(True,self.listFrame)
-        loadedModlist.grid(row=0, column=1,sticky="nsew")
+        self.unloadedModlist = modList.ModList(False,self.listFrame,self,self.mods)
+        self.unloadedModlist.grid(row=0, column=0,sticky="nsew")
+
+        self.loadedModlist = modList.ModList(True,self.listFrame,self,self.mods)
+        self.loadedModlist.grid(row=0, column=1,sticky="nsew")
         
 
         self.root.mainloop()   
 
         
+    def updateLists(self):
+        self.unloadedModlist.updateModList()
+        self.loadedModlist.updateModList()
+
 __imit__ = modGUI()

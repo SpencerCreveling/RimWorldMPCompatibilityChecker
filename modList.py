@@ -3,7 +3,9 @@ from library import *
 from mod import *
 
 class ModList():
-    def __init__(self,LoadedStatuse,root):
+    def __init__(self,LoadedStatuse,root,parent,mods):
+
+        self.parent = parent
 
         self.masterBox = tk.Frame(root)
         self.masterBox.columnconfigure(0, weight=1)
@@ -31,8 +33,8 @@ class ModList():
 
         #unloaded mod list
         self.ModList = tk.Listbox(self.masterBox)
-        self.mods = indexSteamMods(getPaths()[0])
-        self.mods = updateLoadedMods(self.mods)
+        self.mods = mods
+        self.ModList.bind('<Double-1>', self.swapState)
         self.updateModList()
         self.ModList.grid(row=1, column=0,sticky="nsew")
 
@@ -45,6 +47,18 @@ class ModList():
         self.updateModList()
 
     def filter(self,e):
+        self.updateModList()
+    
+    #TODO fix error where mods cant be selected if the mouse is not moved after each selection
+    def swapState(self,e):
+        target = e.widget.get(e.widget.curselection())[4::]
+        for mod in self.mods:
+            if(mod.name == target):
+                mod.loaded = not mod.loaded
+                self.parent.updateLists()
+        
+    def stadardizeMods(self,mods):
+        self.mods = mods
         self.updateModList()
 
     def updateModList(self):
